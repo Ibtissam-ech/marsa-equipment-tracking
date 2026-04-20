@@ -67,21 +67,32 @@ public class PdfService {
     }
 
     private Table buildHeader() throws Exception {
-        InputStream logoStream = getClass().getResourceAsStream("/static/logo.png");
-        byte[] logoBytes = (logoStream != null) ? logoStream.readAllBytes() : new byte[0];
+        // Try to load logo, but continue without it if it fails
+        Image logo = null;
+        try {
+            InputStream logoStream = getClass().getResourceAsStream("/static/logo.png");
+            if (logoStream != null) {
+                byte[] logoBytes = logoStream.readAllBytes();
+                if (logoBytes.length > 0) {
+                    logo = new Image(ImageDataFactory.create(logoBytes)).setWidth(80).setHeight(35);
+                }
+            }
+        } catch (Exception e) {
+            // Continue without logo
+        }
         
-        Image logo = new Image(ImageDataFactory.create(logoBytes))
-                .setWidth(80).setHeight(35);
-
         Paragraph title = new Paragraph("Fiche d'affectation")
                 .setFontSize(18).setFontColor(MARSA_BLUE);
         Paragraph sub = new Paragraph("Matériel informatique")
                 .setFontSize(10).setFontColor(ColorConstants.GRAY);
 
-        Cell logoCell = new Cell()
-                .add(logo)
-                .setBorder(Border.NO_BORDER)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+        Cell logoCell;
+        if (logo != null) {
+            logoCell = new Cell().add(logo).setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+        } else {
+            logoCell = new Cell().add(new Paragraph("MARSA MAROC").setFontSize(14).setBold())
+                .setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
+        }
 
         Cell titleCell = new Cell()
                 .add(title).add(sub)

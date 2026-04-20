@@ -45,9 +45,10 @@ public class PdfController {
             }
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"fiche-affectation.pdf\"")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"fiche-affectation-" + userId + ".pdf\"")
                 .body(pdf);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
