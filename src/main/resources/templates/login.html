@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Marsa Maroc</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f5f7fa; padding: 24px; }
+        .login-container { background: white; border-radius: 12px; padding: 48px; width: 100%; max-width: 420px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .login-header { text-align: center; margin-bottom: 36px; }
+        .login-logo img { height: 56px; }
+        .login-header h1 { font-size: 24px; font-weight: 700; color: #1a202c; margin: 16px 0 6px; }
+        .login-header p { font-size: 14px; color: #718096; }
+        .form-group label { font-weight: 600; margin-bottom: 8px; display: block; color: #1a202c; font-size: 13px; }
+        .form-group input { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
+        .form-group input:focus { outline: none; border-color: #0055a2; }
+        .btn-login { width: 100%; padding: 14px; background: #0055a2; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+        .btn-login:hover { background: #003d73; }
+        .demo-accounts { margin-top: 28px; padding: 20px; background: #f7fafc; border-radius: 8px; }
+        .demo-account { display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
+        .demo-account:hover { border: 2px solid #0055a2; }
+        .role-badge { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .role-admin { background: #003d73; color: white; }
+        .login-error { background: #FEE2E2; color: #991B1B; padding: 14px; border-radius: 8px; font-size: 13px; display: none; margin-bottom: 16px; }
+        .login-error.show { display: block; }
+    </style>
+</head>
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="login-logo"><img src="/images/logo.png" alt="Marsa Maroc"></div>
+            <h1>Bienvenue</h1>
+            <p>Connectez-vous à votre espace</p>
+        </div>
+        <div class="login-error" id="loginError"><span id="errorMessage">Identifiants incorrects</span></div>
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn-login">Se connecter</button>
+        </form>
+        <div class="demo-accounts">
+            <h3>Comptes de démonstration</h3>
+            <div class="demo-account" onclick="quickLogin('admin', 'password')">
+                <strong>admin / password</strong>
+                <span class="role-badge role-admin">Admin</span>
+            </div>
+            <div class="demo-account" onclick="quickLogin('tech001', 'password')">
+                <strong>tech001 / password</strong>
+                <span class="role-badge role-admin">Tech</span>
+            </div>
+        </div>
+    </div>
+    <script>
+        const API_BASE = '/api';
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new URLSearchParams();
+            formData.append('username', document.getElementById('username').value);
+            formData.append('password', document.getElementById('password').value);
+            try {
+                const response = await fetch(API_BASE + '/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: formData
+                });
+                const data = await response.json();
+                if (data.success) {
+                    sessionStorage.setItem('user', JSON.stringify(data.user));
+                    window.location.href = '/';
+                } else {
+                    document.getElementById('loginError').classList.add('show');
+                }
+            } catch (e) {
+                document.getElementById('loginError').classList.add('show');
+            }
+        });
+        function quickLogin(u, p) {
+            document.getElementById('username').value = u;
+            document.getElementById('password').value = p;
+            document.getElementById('loginForm').dispatchEvent(new Event('submit'));
+        }
+    </script>
+</body>
+</html>

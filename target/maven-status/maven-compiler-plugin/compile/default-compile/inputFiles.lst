@@ -1,0 +1,14 @@
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/repository/TicketRepository.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/controller/EquipmentController.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/model/entity/AssignmentHistory.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/EquipmentTrackingApplication.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/repository/AssignmentHistoryRepository.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/service/EquipmentService.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/repository/UserRepository.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/controller/PageController.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/model/entity/User.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/repository/EquipmentRepository.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/config/DataSeeder.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/model/entity/InterventionTicket.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/model/entity/Equipment.java
+/home/ibtissam/marsa-equipment-tracking/src/main/java/com/marsamaroc/equipment/dto/EquipmentDTO.java

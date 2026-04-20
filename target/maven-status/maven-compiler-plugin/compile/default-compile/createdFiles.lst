@@ -1,0 +1,15 @@
+com/marsamaroc/equipment/config/DataSeeder.class
+com/marsamaroc/equipment/repository/UserRepository.class
+com/marsamaroc/equipment/model/entity/AssignmentHistory.class
+com/marsamaroc/equipment/model/entity/User.class
+com/marsamaroc/equipment/EquipmentTrackingApplication.class
+com/marsamaroc/equipment/model/entity/InterventionTicket.class
+com/marsamaroc/equipment/repository/AssignmentHistoryRepository.class
+com/marsamaroc/equipment/model/entity/Equipment.class
+com/marsamaroc/equipment/controller/EquipmentController.class
+com/marsamaroc/equipment/controller/PageController.class
+com/marsamaroc/equipment/repository/TicketRepository.class
+com/marsamaroc/equipment/repository/EquipmentRepository.class
+com/marsamaroc/equipment/dto/EquipmentDTO$UserDTO.class
+com/marsamaroc/equipment/dto/EquipmentDTO.class
+com/marsamaroc/equipment/service/EquipmentService.class
