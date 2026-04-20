@@ -36,6 +36,22 @@ public class PdfController {
         }
     }
     
+    @GetMapping("/fiche/{userId}")
+    public ResponseEntity<byte[]> generateFicheInline(@PathVariable Long userId) {
+        try {
+            byte[] pdf = pdfService.generateFicheAffectationPdf(userId);
+            if (pdf == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"fiche-affectation.pdf\"")
+                .body(pdf);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+    
     @GetMapping("/intervention/{ticketId}")
     public ResponseEntity<Resource> generateInterventionPdf(@PathVariable Long ticketId) {
         try {
