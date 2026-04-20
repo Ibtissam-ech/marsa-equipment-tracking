@@ -11,6 +11,7 @@ public class InterventionTicket {
     private Long id;
     
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String priority;
     private String status;
@@ -36,16 +37,15 @@ public class InterventionTicket {
     @Column(name = "closed_by")
     private Long closedBy;
     
-    @Column(name = "resolution_notes")
+    @Column(name = "resolution_notes", columnDefinition = "TEXT")
     private String resolutionNotes;
     
     @PrePersist
-    protected void onCreate() { 
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) status = "OPEN";
     }
     
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getTitle() { return title; }

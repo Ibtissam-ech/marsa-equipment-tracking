@@ -27,7 +27,6 @@ public class AssignmentHistory {
     private String notes;
     private String assignedBy;
     
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public Equipment getEquipment() { return equipment; }

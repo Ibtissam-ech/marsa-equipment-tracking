@@ -14,12 +14,14 @@ public class EquipmentService {
     private final UserRepository userRepo;
     private final AssignmentHistoryRepository assignmentRepo;
     private final TicketRepository ticketRepo;
+    private final CategoryRepository categoryRepo;
     
-    public EquipmentService(EquipmentRepository e, UserRepository u, AssignmentHistoryRepository a, TicketRepository t) {
+    public EquipmentService(EquipmentRepository e, UserRepository u, AssignmentHistoryRepository a, TicketRepository t, CategoryRepository c) {
         this.equipmentRepo = e;
         this.userRepo = u;
         this.assignmentRepo = a;
         this.ticketRepo = t;
+        this.categoryRepo = c;
     }
     
     public List<EquipmentDTO> getAllEquipment() {
@@ -52,7 +54,7 @@ public class EquipmentService {
             .collect(Collectors.toList());
     }
     
-    public AssignmentHistory assignEquipment(Long equipmentId, Long userId, String assignedBy, String notes) {
+    public AssignmentHistory assignEquipment(Long equipmentId, Long userId, Long assignedBy, String notes) {
         Equipment eq = equipmentRepo.findById(equipmentId).orElse(null);
         User user = userRepo.findById(userId).orElse(null);
         if (eq == null || user == null) return null;
@@ -61,7 +63,7 @@ public class EquipmentService {
         assignment.setEquipment(eq);
         assignment.setUser(user);
         assignment.setStartDate(LocalDateTime.now());
-        assignment.setAssignedBy(assignedBy);
+        assignment.setAssignedBy(assignedBy != null ? "USER-" + assignedBy : "SYSTEM");
         assignment.setNotes(notes);
         assignmentRepo.save(assignment);
         
@@ -97,6 +99,22 @@ public class EquipmentService {
         return ticketRepo.save(t);
     }
     
+    public InterventionTicket closeTicket(Long ticketId, Long closedBy, String resolutionNotes) {
+        InterventionTicket t = ticketRepo.findById(ticketId).orElse(null);
+        if (t != null) {
+            t.setStatus("CLOSED");
+            t.setClosedAt(LocalDateTime.now());
+            t.setClosedBy(closedBy);
+            t.setResolutionNotes(resolutionNotes);
+            return ticketRepo.save(t);
+        }
+        return null;
+    }
+    
+    public List<EquipmentCategory> getAllCategories() {
+        return categoryRepo.findAll();
+    }
+    
     public EquipmentDTO toDTO(Equipment e) {
         EquipmentDTO dto = new EquipmentDTO();
         dto.setId(e.getId());
@@ -108,6 +126,7 @@ public class EquipmentService {
         dto.setDescription(e.getDescription());
         dto.setStatus(e.getStatus());
         dto.setLocation(e.getLocation());
+        dto.setCreatedBy(e.getCreatedBy());
         if (e.getCurrentUser() != null) {
             dto.setCurrentUser(new EquipmentDTO.UserDTO(
                 e.getCurrentUser().getId(),

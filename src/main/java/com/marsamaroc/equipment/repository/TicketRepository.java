@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface TicketRepository extends JpaRepository<InterventionTicket, Long> {
     List<InterventionTicket> findByStatus(String status);
+    List<InterventionTicket> findByUserId(Long userId);
+    List<InterventionTicket> findByEquipmentId(Long equipmentId);
 }

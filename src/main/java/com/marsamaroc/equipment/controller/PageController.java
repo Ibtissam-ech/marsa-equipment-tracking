@@ -5,6 +5,7 @@ import com.marsamaroc.equipment.repository.UserRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.HashMap;
 
 @Controller
 public class PageController {
@@ -28,14 +29,24 @@ public class PageController {
     @ResponseBody
     public Map<String, Object> doLogin(@RequestParam String username, @RequestParam String password) {
         User user = userRepo.findByUsername(username).orElse(null);
-        if (user != null && user.getPassword().equals(password) && "ADMIN".equals(user.getRole())) {
-            return Map.of("success", true, "user", Map.of(
+        
+        if (user != null && user.getPassword().equals(password) && 
+            ("ADMIN".equals(user.getRole()) || "TECHNICIEN".equals(user.getRole()))) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("user", Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
-                "fullName", user.getFullName(),
+                "fullName", user.getFullName() != null ? user.getFullName() : user.getUsername(),
                 "role", user.getRole()
-            ), "token", "demo-token");
+            ));
+            response.put("token", "demo-token-" + System.currentTimeMillis());
+            return response;
         }
-        return Map.of("success", false, "message", "Invalid credentials");
+        
+        Map<String, Object> error = new HashMap<>();
+        error.put("success", false);
+        error.put("message", "Identifiants incorrects ou accès non autorisé");
+        return error;
     }
 }

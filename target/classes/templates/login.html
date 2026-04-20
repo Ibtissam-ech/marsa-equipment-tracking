@@ -8,65 +8,111 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f5f7fa; padding: 24px; }
-        .login-container { background: white; border-radius: 12px; padding: 48px; width: 100%; max-width: 420px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #003d73 0%, #0055a2 50%, #0055a2 100%); padding: 24px; }
+        .login-container { background: var(--white); border-radius: var(--radius-lg); padding: 48px; width: 100%; max-width: 420px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .login-header { text-align: center; margin-bottom: 36px; }
-        .login-logo img { height: 56px; }
-        .login-header h1 { font-size: 24px; font-weight: 700; color: #1a202c; margin: 16px 0 6px; }
-        .login-header p { font-size: 14px; color: #718096; }
-        .form-group label { font-weight: 600; margin-bottom: 8px; display: block; color: #1a202c; font-size: 13px; }
-        .form-group input { width: 100%; padding: 14px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-        .form-group input:focus { outline: none; border-color: #0055a2; }
-        .btn-login { width: 100%; padding: 14px; background: #0055a2; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 16px; }
-        .btn-login:hover { background: #003d73; }
-        .demo-accounts { margin-top: 28px; padding: 20px; background: #f7fafc; border-radius: 8px; }
-        .demo-account { display: flex; justify-content: space-between; padding: 12px; background: white; border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
-        .demo-account:hover { border: 2px solid #0055a2; }
-        .role-badge { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
-        .role-admin { background: #003d73; color: white; }
-        .login-error { background: #FEE2E2; color: #991B1B; padding: 14px; border-radius: 8px; font-size: 13px; display: none; margin-bottom: 16px; }
-        .login-error.show { display: block; }
+        .login-logo { margin-bottom: 20px; }
+        .login-logo img { height: 64px; width: auto; border-radius: var(--radius-md); box-shadow: var(--shadow-md); }
+        .login-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+        .login-header p { font-size: 14px; color: var(--text-secondary); }
+        .login-form { display: flex; flex-direction: column; gap: 20px; }
+        .form-group label { font-weight: 600; margin-bottom: 8px; display: block; color: var(--text-primary); font-size: 13px; }
+        .form-group input { width: 100%; padding: 14px 16px; border: 2px solid var(--border-light); border-radius: var(--radius-md); font-size: 15px; transition: var(--transition-fast); }
+        .form-group input:focus { outline: none; border-color: var(--marsa-blue); box-shadow: 0 0 0 3px rgba(0,85,162,0.1); }
+        .btn-login { width: 100%; padding: 14px; background: var(--marsa-blue); color: white; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; cursor: pointer; transition: var(--transition-normal); display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+        .btn-login:hover { background: var(--marsa-navy); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,85,162,0.3); }
+        .btn-login svg { width: 18px; height: 18px; }
+        .login-footer { margin-top: 28px; text-align: center; font-size: 12px; color: var(--text-muted); }
+        .demo-accounts { margin-top: 28px; padding: 20px; background: var(--bg-secondary); border-radius: var(--radius-md); }
+        .demo-accounts h3 { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: center; }
+        .demo-account { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--white); border-radius: var(--radius-sm); margin-bottom: 8px; cursor: pointer; transition: var(--transition-fast); border: 2px solid transparent; }
+        .demo-account:last-child { margin-bottom: 0; }
+        .demo-account:hover { border-color: var(--marsa-blue); }
+        .demo-account-info strong { color: var(--text-primary); font-size: 13px; display: block; }
+        .demo-account-info span { color: var(--text-muted); font-size: 11px; }
+        .role-badge { padding: 4px 10px; border-radius: 50px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .role-admin { background: var(--marsa-navy); color: white; }
+        .role-tech { background: var(--text-secondary); color: white; }
+        .login-error { background: #FEE2E2; color: #991B1B; padding: 14px 16px; border-radius: var(--radius-md); font-size: 13px; display: none; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .login-error.show { display: flex; }
+        .login-error svg { width: 18px; height: 18px; flex-shrink: 0; }
     </style>
 </head>
 <body class="login-page">
     <div class="login-container">
         <div class="login-header">
-            <div class="login-logo"><img src="/images/logo.png" alt="Marsa Maroc"></div>
+            <div class="login-logo">
+                <img src="/images/logo.png" alt="Marsa Maroc">
+            </div>
             <h1>Bienvenue</h1>
             <p>Connectez-vous à votre espace</p>
         </div>
-        <div class="login-error" id="loginError"><span id="errorMessage">Identifiants incorrects</span></div>
+        <div class="login-error" id="loginError">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span id="errorMessage">Identifiants incorrects</span>
+        </div>
         <form class="login-form" id="loginForm">
             <div class="form-group">
                 <label for="username">Nom d'utilisateur</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required placeholder="Votre nom d'utilisateur" autocomplete="username">
             </div>
             <div class="form-group">
                 <label for="password">Mot de passe</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required placeholder="Votre mot de passe" autocomplete="current-password">
             </div>
-            <button type="submit" class="btn-login">Se connecter</button>
+            <button type="submit" class="btn-login">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                Se connecter
+            </button>
         </form>
+        <div class="login-footer">
+            <p>Marsa Maroc - Equipment Tracking System</p>
+        </div>
         <div class="demo-accounts">
-            <h3>Comptes de démonstration</h3>
-            <div class="demo-account" onclick="quickLogin('admin', 'password')">
-                <strong>admin / password</strong>
+            <h3>Comptes de démonstration (cliquez pour tester)</h3>
+            <div class="demo-account" onclick="quickLogin('amine', 'password')">
+                <div class="demo-account-info">
+                    <strong>admin / password</strong>
+                    <span>Administrateur</span>
+                </div>
                 <span class="role-badge role-admin">Admin</span>
             </div>
-            <div class="demo-account" onclick="quickLogin('tech001', 'password')">
-                <strong>tech001 / password</strong>
-                <span class="role-badge role-admin">Tech</span>
+            <div class="demo-account" onclick="quickLogin('said', 'password')">
+                <div class="demo-account-info">
+                    <strong>said / password</strong>
+                    <span>Technicien</span>
+                </div>
+                <span class="role-badge role-tech">Tech</span>
+            </div>
+            <div class="demo-account" onclick="quickLogin('soufiane', 'password')">
+                <div class="demo-account-info">
+                    <strong>soufiane / password</strong>
+                    <span>Technicien</span>
+                </div>
+                <span class="role-badge role-tech">Tech</span>
             </div>
         </div>
     </div>
     <script>
         const API_BASE = '/api';
+        
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const formData = new URLSearchParams();
-            formData.append('username', document.getElementById('username').value);
-            formData.append('password', document.getElementById('password').value);
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
             try {
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
                 const response = await fetch(API_BASE + '/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -75,17 +121,26 @@
                 const data = await response.json();
                 if (data.success) {
                     sessionStorage.setItem('user', JSON.stringify(data.user));
+                    sessionStorage.setItem('token', data.token);
                     window.location.href = '/';
                 } else {
-                    document.getElementById('loginError').classList.add('show');
+                    showError(data.message || 'Identifiants incorrects');
                 }
-            } catch (e) {
-                document.getElementById('loginError').classList.add('show');
+            } catch (error) {
+                showError('Erreur de connexion');
             }
         });
-        function quickLogin(u, p) {
-            document.getElementById('username').value = u;
-            document.getElementById('password').value = p;
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('loginError');
+            document.getElementById('errorMessage').textContent = message;
+            errorDiv.classList.add('show');
+            setTimeout(() => errorDiv.classList.remove('show'), 4000);
+        }
+        
+        function quickLogin(username, password) {
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
             document.getElementById('loginForm').dispatchEvent(new Event('submit'));
         }
     </script>

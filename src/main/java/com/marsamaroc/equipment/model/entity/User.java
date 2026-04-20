@@ -25,15 +25,17 @@ public class User {
     private String cin;
     private String phoneNumber;
     private String role;
-    private boolean enabled = true;
+    private Boolean enabled = true;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     
     @PrePersist
-    protected void onCreate() { createdAt = LocalDateTime.now(); }
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        if (enabled == null) enabled = true;
+    }
     
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getUsername() { return username; }
@@ -54,8 +56,8 @@ public class User {
     public void setPhoneNumber(String phoneNumber) { this.phoneNumber = phoneNumber; }
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-    public boolean isEnabled() { return enabled; }
-    public void setEnabled(boolean enabled) { this.enabled = enabled; }
+    public Boolean getEnabled() { return enabled; }
+    public void setEnabled(Boolean enabled) { this.enabled = enabled; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

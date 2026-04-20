@@ -19,6 +19,7 @@ public class Equipment {
     private String description;
     private String status;
     private String location;
+    private Long createdBy;
     
     @ManyToOne
     @JoinColumn(name = "current_user_id")
@@ -28,12 +29,11 @@ public class Equipment {
     private LocalDateTime createdAt;
     
     @PrePersist
-    protected void onCreate() { 
+    protected void onCreate() {
         createdAt = LocalDateTime.now();
         if (status == null) status = "AVAILABLE";
     }
     
-    // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getName() { return name; }
@@ -52,6 +52,8 @@ public class Equipment {
     public void setStatus(String status) { this.status = status; }
     public String getLocation() { return location; }
     public void setLocation(String location) { this.location = location; }
+    public Long getCreatedBy() { return createdBy; }
+    public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     public User getCurrentUser() { return currentUser; }
     public void setCurrentUser(User currentUser) { this.currentUser = currentUser; }
     public LocalDateTime getCreatedAt() { return createdAt; }

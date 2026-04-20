@@ -7,4 +7,5 @@ import java.util.List;
 public interface AssignmentHistoryRepository extends JpaRepository<AssignmentHistory, Long> {
     List<AssignmentHistory> findByUserIdAndEndDateIsNull(Long userId);
     List<AssignmentHistory> findByEquipmentIdAndEndDateIsNull(Long equipmentId);
+    List<AssignmentHistory> findByUserId(Long userId);
 }
