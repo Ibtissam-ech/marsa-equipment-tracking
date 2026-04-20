@@ -28,14 +28,18 @@ public class PageController {
     @ResponseBody
     public Map<String, Object> doLogin(@RequestParam String username, @RequestParam String password) {
         User user = userRepo.findByUsername(username).orElse(null);
-        if (user != null && user.getPassword().equals(password) && "ADMIN".equals(user.getRole())) {
-            return Map.of("success", true, "user", Map.of(
-                "id", user.getId(),
-                "username", user.getUsername(),
-                "fullName", user.getFullName(),
-                "role", user.getRole()
-            ), "token", "demo-token");
+        if (user != null && "password".equals(user.getPassword()) && "ADMIN".equals(user.getRole())) {
+            java.util.HashMap<String, Object> userMap = new java.util.HashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("username", user.getUsername());
+            userMap.put("fullName", user.getFullName() != null ? user.getFullName() : user.getUsername());
+            userMap.put("role", user.getRole());
+            java.util.HashMap<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("user", userMap);
+            response.put("token", "demo-token");
+            return response;
         }
-        return Map.of("success", false, "message", "Invalid credentials");
+        return java.util.Map.of("success", false, "message", "Invalid credentials");
     }
 }
