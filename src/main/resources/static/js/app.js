@@ -121,15 +121,14 @@ function filterProducts() {
 }
 
 function loadUsers() {
-    fetch(API_BASE + '/users').then(r => r.json()).then(users => {
-        const affectataires = users.filter(u => u.role !== 'ADMIN');
+    fetch(API_BASE + '/affectataires').then(r => r.json()).then(affectataires => {
         const tbody = document.getElementById('users-list');
         if (affectataires.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>Aucun affectataire</p></div></td></tr>';
             return;
         }
         tbody.innerHTML = affectataires.map(u => {
-            const displayName = u.name ? u.name : u.username;
+            const displayName = u.nom ? u.nom : u.username;
             return '<tr><td>#' + u.id + '</td><td><strong>' + displayName + '</strong></td><td>' + (u.email || '-') + '</td><td>' + (u.department || '-') + '</td><td>' + (u.fonction || '-') + '</td><td><span class="status-badge status-AFFECTATAIRE">Affectataire</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewUserDetail(' + u.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateUserFiche(' + u.id + ')">PDF</button></td></tr>';
         }).join('');
     });

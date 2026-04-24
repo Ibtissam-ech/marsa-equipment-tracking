@@ -18,15 +18,18 @@ public class EquipmentController {
     private final AssignmentHistoryRepository assignmentRepo;
     private final TicketRepository ticketRepo;
     private final CategoryRepository categoryRepo;
+    private final AffectataireRepository affectataireRepo;
     
     public EquipmentController(EquipmentService s, UserRepository u, EquipmentRepository e, 
-                          AssignmentHistoryRepository a, TicketRepository t, CategoryRepository c) {
+                          AssignmentHistoryRepository a, TicketRepository t, CategoryRepository c,
+                          AffectataireRepository af) {
         this.equipmentService = s;
         this.userRepo = u;
         this.equipmentRepo = e;
         this.assignmentRepo = a;
         this.ticketRepo = t;
         this.categoryRepo = c;
+        this.affectataireRepo = af;
     }
     
     @GetMapping("/equipment")
@@ -62,6 +65,16 @@ public class EquipmentController {
     @GetMapping("/users/{id}/assignments")
     public List<AssignmentHistory> getUserAssignments(@PathVariable Long id) {
         return assignmentRepo.findByUserId(id);
+    }
+    
+    @GetMapping("/affectataires")
+    public List<Affectataire> getAllAffectataires() {
+        return affectataireRepo.findAll();
+    }
+    
+    @GetMapping("/affectataires/{id}")
+    public Affectataire getAffectataire(@PathVariable Long id) {
+        return affectataireRepo.findById(id).orElse(null);
     }
     
     @GetMapping("/assignments/current")
