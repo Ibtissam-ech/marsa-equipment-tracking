@@ -69,6 +69,16 @@ public class EquipmentController {
         return equipmentService.getCurrentAssignments();
     }
     
+    @GetMapping("/assignments/history")
+    public List<AssignmentHistory> getAssignmentHistory() {
+        return assignmentRepo.findAll();
+    }
+    
+    @GetMapping("/assignments/equipment/{equipmentId}")
+    public List<AssignmentHistory> getEquipmentAssignments(@PathVariable Long equipmentId) {
+        return assignmentRepo.findByEquipmentIdAndEndDateIsNull(equipmentId);
+    }
+    
     @PostMapping("/assignments/assign")
     public AssignmentHistory assignEquipment(@RequestBody Map<String, Object> data) {
         Long productId = ((Number) data.get("productId")).longValue();
@@ -103,5 +113,18 @@ public class EquipmentController {
     @GetMapping("/categories")
     public List<EquipmentCategory> getAllCategories() {
         return equipmentService.getAllCategories();
+    }
+    
+    @PutMapping("/equipment/{id}")
+    public EquipmentDTO updateEquipment(@PathVariable Long id, @RequestBody Equipment equipment) {
+        Equipment existing = equipmentRepo.findById(id).orElse(null);
+        if (existing == null) return null;
+        if (equipment.getName() != null) existing.setName(equipment.getName());
+        if (equipment.getModel() != null) existing.setModel(equipment.getModel());
+        if (equipment.getCategory() != null) existing.setCategory(equipment.getCategory());
+        if (equipment.getSerialNumber() != null) existing.setSerialNumber(equipment.getSerialNumber());
+        if (equipment.getBrand() != null) existing.setBrand(equipment.getBrand());
+        if (equipment.getStatus() != null) existing.setStatus(equipment.getStatus());
+        return equipmentService.toDTO(equipmentService.saveEquipment(existing));
     }
 }

@@ -110,7 +110,8 @@ function renderProductsTable(products) {
         tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>Aucun équipement</p></div></td></tr>';
         return;
     }
-    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? (p.currentUser.fullName || p.currentUser.username) : '<span style="color:#999">Non affecté</span>') + '</td><td><span class="status-badge status-' + p.status + '">' + p.status + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductDetails(' + p.id + ')">Détails</button></td></tr>').join('');
+    const statusMap = {'AVAILABLE': 'Disponible', 'ASSIGNED': 'Affecté', 'MAINTENANCE': 'En maintenance', 'RETIRED': 'Retiré'};
+    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? ((p.currentUser.fullName ? p.currentUser.fullName : p.currentUser.username) || p.currentUser.username) : '<span style="color:#999">Non affecté</span>') + '</td><td><span class="status-badge status-' + p.status + '">' + (statusMap[p.status] || p.status) + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductDetails(' + p.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateEquipmentPdf(' + p.id + ')">PDF</button></td></tr>').join('');
 }
 
 function filterProducts() {
@@ -121,25 +122,30 @@ function filterProducts() {
 
 function loadUsers() {
     fetch(API_BASE + '/users').then(r => r.json()).then(users => {
-        // Filter out admin - only show affectataires
         const affectataires = users.filter(u => u.role !== 'ADMIN');
         const tbody = document.getElementById('users-list');
         if (affectataires.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>Aucun affectataire</p></div></td></tr>';
             return;
         }
-        tbody.innerHTML = affectataires.map(u => '<tr><td>#' + u.id + '</td><td><strong>' + (u.username) + '</strong></td><td>' + (u.email || '-') + '</td><td>' + (u.department || '-') + '</td><td>' + (u.fonction || '-') + '</td><td><span class="status-badge status-AFFECTATAIRE">Affectataire</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewUserDetail(' + u.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateUserFiche(' + u.id + ')">PDF</button></td></tr>').join('');
+        tbody.innerHTML = affectataires.map(u => {
+            const displayName = u.fullName ? u.fullName : u.username;
+            return '<tr><td>#' + u.id + '</td><td><strong>' + displayName + '</strong></td><td>' + (u.email || '-') + '</td><td>' + (u.department || '-') + '</td><td>' + (u.fonction || '-') + '</td><td><span class="status-badge status-AFFECTATAIRE">Affectataire</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewUserDetail(' + u.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateUserFiche(' + u.id + ')">PDF</button></td></tr>';
+        }).join('');
     });
 }
 
 function loadCurrentAssignments() {
-    fetch(API_BASE + '/assignments/current').then(r => r.json()).then(assignments => {
+    fetch(API_BASE + '/assignments/history').then(r => r.json()).then(assignments => {
         const tbody = document.getElementById('current-assignments-list');
         if (assignments.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="4"><div class="empty-state"><p>Aucune affectation</p></div></td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><p>Aucune affectation</p></div></td></tr>';
             return;
         }
-        tbody.innerHTML = assignments.map(a => '<tr><td>' + (a.equipment?.model || '-') + '</td><td><strong>' + (a.user?.fullName || '-') + '</strong></td><td>' + formatDateSafe(a.startDate) + '</td><td><button class="btn btn-warning btn-sm" onclick="endAssignment(' + a.equipment?.id + ')">Retourner</button> <button class="btn btn-primary btn-sm" onclick="generateUserFiche(' + a.user?.id + ')">PDF</button></td></tr>').join('');
+        tbody.innerHTML = assignments.map(a => {
+            const userName = a.user && a.user.fullName ? a.user.fullName : (a.user ? a.user.username : '-');
+            return '<tr><td>' + (a.equipment?.model || '-') + '</td><td><strong>' + userName + '</strong></td><td>' + formatDateSafe(a.startDate) + '</td><td>' + formatDateSafe(a.endDate) + '</td><td>' + (a.endDate ? '<span class="status-badge status-RETURNED">Terminé</span>' : '<span class="status-badge status-ACTIVE">Actif</span>') + '</td><td><button class="btn btn-primary btn-sm" onclick="generateEquipmentPdf(' + a.equipment?.id + ')">PDF Équipement</button></td></tr>';
+        }).join('');
     });
 }
 
@@ -162,8 +168,8 @@ function loadProductSelectors() {
         [assignSelect, ticketSelect].forEach(s => { if (s) s.innerHTML = '<option value="">Sélectionner</option>'; });
         
         products.forEach(p => {
-            const isAssigned = p.status === 'ASSIGNED';
-            if (assignSelect) assignSelect.innerHTML += '<option value="' + p.id + '"' + (isAssigned ? ' disabled' : '') + '>' + p.model + ' - ' + p.serialNumber + (isAssigned ? ' (occupé)' : '') + '</option>';
+            const isAffected = p.status && p.status.toUpperCase() === 'ASSIGNED';
+            if (assignSelect && !isAffected) assignSelect.innerHTML += '<option value="' + p.id + '">' + p.model + ' - ' + p.serialNumber + '</option>';
             if (ticketSelect) ticketSelect.innerHTML += '<option value="' + p.id + '">' + p.model + ' - ' + p.serialNumber + '</option>';
         });
     });
@@ -175,7 +181,11 @@ function loadUserSelectors() {
         
         if (assignUserSelect) {
             assignUserSelect.innerHTML = '<option value="">Sélectionner</option>';
-            users.forEach(u => { assignUserSelect.innerHTML += '<option value="' + u.id + '">' + u.fullName + ' (' + (u.department || 'N/A') + ')</option>'; });
+            users.forEach(u => { 
+                if (u.role !== 'ADMIN') {
+                    assignUserSelect.innerHTML += '<option value="' + u.id + '">' + u.username + ' (' + (u.department || 'N/A') + ')</option>'; 
+                }
+            });
         }
     });
 }
@@ -348,7 +358,11 @@ function viewUserDetail(userId) {
 }
 
 function generateUserFiche(userId) {
-    window.open(API_BASE + '/pdf/fiche-affectation/' + userId, '_blank');
+    window.open(API_BASE + '/pdf/fiche-affectation/user/' + userId, '_blank');
+}
+
+function generateEquipmentPdf(equipmentId) {
+    window.open(API_BASE + '/pdf/fiche-affectation/equipment/' + equipmentId, '_blank');
 }
 
 function generateTicketPdf(ticketId) {

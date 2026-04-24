@@ -123,9 +123,19 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-pri
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--marsa-blue); }
 .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 
-.search-box { position: relative; }
-.search-box input { padding-left: 44px; }
-.search-box svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; color: var(--text-muted); }
+.search-box { position: relative; margin-bottom: 20px; }
+.search-box input { 
+    padding: 14px 20px 14px 48px; 
+    width: 100%; 
+    border: 2px solid var(--border-light); 
+    border-radius: var(--radius-md); 
+    font-size: 15px; 
+    background: var(--bg-card); 
+    transition: var(--transition-fast);
+}
+.search-box input:focus { outline: none; border-color: var(--marsa-blue); box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1); }
+.search-box svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: var(--text-muted); }
+.search-box { background: var(--bg-card); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
 
 .empty-state { text-align: center; padding: 60px 24px; color: var(--text-muted); }
 .empty-state svg { width: 64px; height: 64px; margin-bottom: 16px; }

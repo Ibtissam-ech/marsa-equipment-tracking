@@ -18,10 +18,10 @@ public class PdfController {
         this.pdfService = pdfService;
     }
     
-    @GetMapping("/fiche-affectation/{userId}")
-    public ResponseEntity<Resource> generateFicheAffectation(@PathVariable Long userId) {
+    @GetMapping("/fiche-affectation/user/{userId}")
+    public ResponseEntity<Resource> generateUserFiche(@PathVariable Long userId) {
         try {
-            String fileName = pdfService.generateFicheAffectation(userId);
+            String fileName = pdfService.generateUserFichePdf(userId);
             if (fileName == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -36,19 +36,20 @@ public class PdfController {
         }
     }
     
-    @GetMapping("/fiche/{userId}")
-    public ResponseEntity<byte[]> generateFicheInline(@PathVariable Long userId) {
+    @GetMapping("/fiche-affectation/equipment/{equipmentId}")
+    public ResponseEntity<Resource> generateEquipmentFiche(@PathVariable Long equipmentId) {
         try {
-            byte[] pdf = pdfService.generateFicheAffectationPdf(userId);
-            if (pdf == null) {
+            String fileName = pdfService.generateEquipmentFichePdf(equipmentId);
+            if (fileName == null) {
                 return ResponseEntity.notFound().build();
             }
+            File file = new File(fileName);
+            Resource resource = new FileSystemResource(file);
             return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"fiche-affectation-" + userId + ".pdf\"")
-                .body(pdf);
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+                .body(resource);
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
