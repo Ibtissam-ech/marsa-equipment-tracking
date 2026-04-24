@@ -111,7 +111,7 @@ function renderProductsTable(products) {
         return;
     }
     const statusMap = {'AVAILABLE': 'Disponible', 'ASSIGNED': 'Affecté', 'MAINTENANCE': 'En maintenance', 'RETIRED': 'Retiré'};
-    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? ((p.currentUser.fullName ? p.currentUser.fullName : p.currentUser.username) || p.currentUser.username) : '<span style="color:#999">Non affecté</span>') + '</td><td><span class="status-badge status-' + p.status + '">' + (statusMap[p.status] || p.status) + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductDetails(' + p.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateEquipmentPdf(' + p.id + ')">PDF</button></td></tr>').join('');
+    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? ((p.currentUser.name ? p.currentUser.name : p.currentUser.username)) : '<span style="color:#999">Non affecté</span>') + '</td><td><span class="status-badge status-' + p.status + '">' + (statusMap[p.status] || p.status) + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductDetails(' + p.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateEquipmentPdf(' + p.id + ')">PDF</button></td></tr>').join('');
 }
 
 function filterProducts() {
@@ -129,7 +129,7 @@ function loadUsers() {
             return;
         }
         tbody.innerHTML = affectataires.map(u => {
-            const displayName = u.fullName ? u.fullName : u.username;
+            const displayName = u.name ? u.name : u.username;
             return '<tr><td>#' + u.id + '</td><td><strong>' + displayName + '</strong></td><td>' + (u.email || '-') + '</td><td>' + (u.department || '-') + '</td><td>' + (u.fonction || '-') + '</td><td><span class="status-badge status-AFFECTATAIRE">Affectataire</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewUserDetail(' + u.id + ')">Détails</button> <button class="btn btn-primary btn-sm" onclick="generateUserFiche(' + u.id + ')">PDF</button></td></tr>';
         }).join('');
     });
@@ -143,7 +143,7 @@ function loadCurrentAssignments() {
             return;
         }
         tbody.innerHTML = assignments.map(a => {
-            const userName = a.user && a.user.fullName ? a.user.fullName : (a.user ? a.user.username : '-');
+            const userName = a.user && a.user.name ? a.user.name : (a.user ? a.user.username : '-');
             return '<tr><td>' + (a.equipment?.model || '-') + '</td><td><strong>' + userName + '</strong></td><td>' + formatDateSafe(a.startDate) + '</td><td>' + formatDateSafe(a.endDate) + '</td><td>' + (a.endDate ? '<span class="status-badge status-RETURNED">Terminé</span>' : '<span class="status-badge status-ACTIVE">Actif</span>') + '</td><td><button class="btn btn-primary btn-sm" onclick="generateEquipmentPdf(' + a.equipment?.id + ')">PDF Équipement</button></td></tr>';
         }).join('');
     });

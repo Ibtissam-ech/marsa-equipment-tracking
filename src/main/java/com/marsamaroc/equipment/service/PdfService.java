@@ -248,7 +248,7 @@ public class PdfService {
             String affectName = "-";
             if (!assignments.isEmpty() && assignments.get(0).getUser() != null) {
                 User u = assignments.get(0).getUser();
-                affectName = u.getFullName() != null && !u.getFullName().isEmpty() ? u.getFullName() : u.getUsername();
+                affectName = u.getName() != null && !u.getName().isEmpty() ? u.getName() : u.getUsername();
             }
             Cell last = new Cell().add(new Paragraph(affectName).setFontSize(10)).setPadding(6);
             table.addCell(last);
@@ -260,7 +260,7 @@ public class PdfService {
         Table sigTable = new Table(UnitValue.createPercentArray(new float[]{50, 50})).useAllAvailableWidth();
         sigTable.setBorder(new SolidBorder(MARSA_BLUE, 1.5f));
 
-        String userName = user.getFullName() != null && !user.getFullName().isEmpty() ? user.getFullName() : user.getUsername();
+        String userName = user.getName() != null && !user.getName().isEmpty() ? user.getName() : user.getUsername();
 
         Cell leftLabel = new Cell().add(new Paragraph("Entité demandeuse").setFontSize(10).setBold().setFontColor(MARSA_BLUE))
                 .setBorder(Border.NO_BORDER).setPadding(8);
@@ -324,7 +324,8 @@ public class PdfService {
     private Table buildEquipmentSignatureSection(List<AssignmentHistory> assignments) {
         String affectataire = "-";
         if (!assignments.isEmpty() && assignments.get(0).getUser() != null) {
-            affectataire = assignments.get(0).getUser().getUsername();
+            User u = assignments.get(0).getUser();
+            affectataire = u.getName() != null && !u.getName().isEmpty() ? u.getName() : u.getUsername();
         }
 
         Table sigTable = new Table(UnitValue.createPercentArray(new float[]{50, 50})).useAllAvailableWidth();
