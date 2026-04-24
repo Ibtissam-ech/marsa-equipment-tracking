@@ -18,10 +18,9 @@ import com.marsamaroc.equipment.repository.*;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -33,8 +32,8 @@ public class PdfService {
     private final TicketRepository ticketRepo;
 
     private static final DeviceRgb MARSA_BLUE = new DeviceRgb(0x1E, 0x3A, 0x5F);
-    private static final DeviceRgb LIGHT_GRAY = new DeviceRgb(0xF5, 0xF5, 0xF5);
     private static final DeviceRgb GRAY_TEXT = new DeviceRgb(0x77, 0x77, 0x77);
+    private static final DeviceRgb LIGHT_GRAY = new DeviceRgb(0xF5, 0xF5, 0xF5);
 
     public PdfService(EquipmentRepository e, UserRepository u, AssignmentHistoryRepository a, TicketRepository t) {
         this.equipmentRepo = e;
@@ -55,19 +54,19 @@ public class PdfService {
         Document doc = new Document(pdf, PageSize.A4);
         doc.setMargins(20, 18, 15, 18);
 
-        doc.add(buildHeader());
-        doc.add(buildHRule(MARSA_BLUE, 2f, 4f));
-        doc.add(buildUserInfo(user));
-        doc.add(buildEquipmentTable(activeAssignments));
-        doc.add(buildSignatureSection(user));
-        doc.add(buildFooter());
+        // Build PDF according to exact format
+        doc.add(buildPdfHeader());
+        doc.add(buildPdfHRule(MARSA_BLUE, 2f, 4f));
+        doc.add(buildPdfMetaInfo(user));
+        doc.add(buildPdfEquipmentTable(activeAssignments));
+        doc.add(buildPdfSignatureSection(user));
+        doc.add(buildPdfFooter());
 
         doc.close();
         return baos.toByteArray();
     }
 
-    private Table buildHeader() throws Exception {
-        // Try to load logo, but continue without it if it fails
+    private Table buildPdfHeader() throws Exception {
         Image logo = null;
         try {
             InputStream logoStream = getClass().getResourceAsStream("/static/logo.png");
@@ -80,95 +79,110 @@ public class PdfService {
         } catch (Exception e) {
             // Continue without logo
         }
-        
-        Paragraph title = new Paragraph("Fiche d'affectation")
-                .setFontSize(18).setFontColor(MARSA_BLUE);
-        Paragraph sub = new Paragraph("Matériel informatique")
-                .setFontSize(10).setFontColor(ColorConstants.GRAY);
+
+        Paragraph title = new Paragraph("Fiche de charge et affectation")
+                .setFontSize(20).setFontColor(MARSA_BLUE);
+        Paragraph sub = new Paragraph("matériel informatique")
+                .setFontSize(11).setFontColor(ColorConstants.GRAY);
 
         Cell logoCell;
         if (logo != null) {
             logoCell = new Cell().add(logo).setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
         } else {
-            logoCell = new Cell().add(new Paragraph("MARSA MAROC").setFontSize(14).setBold())
+            logoCell = new Cell().add(new Paragraph("MARSA MAROC").setFontSize(16).setBold().setFontColor(MARSA_BLUE))
                 .setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
         }
 
-        Cell titleCell = new Cell()
-                .add(title).add(sub)
-                .setBorder(Border.NO_BORDER)
-                .setVerticalAlignment(VerticalAlignment.MIDDLE);
+        Cell titleCell = new Cell().add(title).add(sub)
+                .setBorder(Border.NO_BORDER).setVerticalAlignment(VerticalAlignment.MIDDLE);
 
         return new Table(UnitValue.createPercentArray(new float[]{30, 70}))
-                .useAllAvailableWidth()
-                .setMarginBottom(4)
-                .addCell(logoCell)
-                .addCell(titleCell);
+                .useAllAvailableWidth().setMarginBottom(4)
+                .addCell(logoCell).addCell(titleCell);
     }
 
-    private Table buildUserInfo(User user) {
+    private Table buildPdfMetaInfo(User user) {
         String date = LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
         
         Paragraph datePara = new Paragraph("Date : " + date).setFontSize(10);
-        Paragraph namePara = new Paragraph("Affectataire : " + (user.getFullName() != null ? user.getFullName() : user.getUsername()))
+        
+        Paragraph userPara = new Paragraph("Affectataire : " + (user.getUsername() != null ? user.getUsername() : "-"))
                 .setFontSize(11).setFontColor(MARSA_BLUE);
+        
         Paragraph deptPara = new Paragraph("Département : " + (user.getDepartment() != null ? user.getDepartment() : "-")).setFontSize(10);
+        
         Paragraph fonctionPara = new Paragraph("Fonction : " + (user.getFonction() != null ? user.getFonction() : "-")).setFontSize(10);
 
-        Cell leftCell = new Cell().add(datePara).setBorder(Border.NO_BORDER);
-        Cell rightCell = new Cell().add(namePara).add(deptPara).add(fonctionPara).setBorder(Border.NO_BORDER);
+        Cell infoCell = new Cell(1, 3).add(datePara).add(userPara).add(deptPara).add(fonctionPara)
+                .setBorder(Border.NO_BORDER);
 
-        return new Table(UnitValue.createPercentArray(new float[]{40, 60}))
+        return new Table(UnitValue.createPercentArray(new float[]{30, 40, 30}))
                 .useAllAvailableWidth().setMarginTop(4).setMarginBottom(6)
-                .addCell(leftCell).addCell(rightCell);
+                .addCell(infoCell);
     }
 
-    private Table buildEquipmentTable(List<AssignmentHistory> assignments) {
-        Table table = new Table(UnitValue.createPercentArray(new float[]{3, 2, 2, 2, 1})).useAllAvailableWidth();
+    private Table buildPdfEquipmentTable(List<AssignmentHistory> assignments) {
+        // 6 columns as requested
+        Table table = new Table(UnitValue.createPercentArray(new float[]{2, 1.5f, 1.5f, 1.5f, 1.5f, 1.5f})).useAllAvailableWidth();
 
-        String[] headers = {"Équipement", "Modèle", "N° Série", "Date affectation", "Statut"};
+        String[] headers = {
+            "Modèle & Marque\nPC Portable",
+            "Modèle & Marque\nClavier/Souris",
+            "Modèle & Marque\nÉcran",
+            "Modèle & Marque\nStation'accueil",
+            "Modèle & Marque\nDisque Dur",
+            "Affectataire"
+        };
+
         for (String h : headers) {
             Cell cell = new Cell()
-                    .add(new Paragraph(h).setFontColor(ColorConstants.WHITE).setFontSize(9))
+                    .add(new Paragraph(h).setFontColor(ColorConstants.WHITE).setFontSize(8))
                     .setBackgroundColor(MARSA_BLUE)
                     .setTextAlignment(TextAlignment.CENTER)
                     .setVerticalAlignment(VerticalAlignment.MIDDLE)
-                    .setPadding(5);
+                    .setPadding(4);
             table.addHeaderCell(cell);
         }
 
         if (assignments.isEmpty()) {
-            for (int i = 0; i < 5; i++) {
-                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setHeight(30).setBorder(Border.NO_BORDER));
+            for (int i = 0; i < 6; i++) {
+                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setHeight(40).setBorder(Border.NO_BORDER));
             }
         } else {
             for (AssignmentHistory a : assignments) {
                 Equipment e = a.getEquipment();
-                table.addCell(new Cell().add(new Paragraph(e != null ? e.getName() : "-").setFontSize(9)).setBackgroundColor(LIGHT_GRAY).setPadding(4));
-                table.addCell(new Cell().add(new Paragraph(e != null && e.getModel() != null ? e.getModel() : "-").setFontSize(9)).setBackgroundColor(LIGHT_GRAY).setPadding(4));
-                table.addCell(new Cell().add(new Paragraph(e != null && e.getSerialNumber() != null ? e.getSerialNumber() : "-").setFontSize(9)).setBackgroundColor(LIGHT_GRAY).setPadding(4));
-                table.addCell(new Cell().add(new Paragraph(a.getStartDate() != null ? a.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) : "-").setFontSize(9)).setBackgroundColor(LIGHT_GRAY).setPadding(4));
-                table.addCell(new Cell().add(new Paragraph("Actif").setFontSize(9)).setBackgroundColor(new DeviceRgb(0x10, 0xB9, 0x81)).setFontColor(ColorConstants.WHITE).setTextAlignment(TextAlignment.CENTER).setPadding(4));
+                String model = e != null ? (e.getName() != null ? e.getName() : e.getModel()) : "-";
+                String sn = e != null ? (e.getSerialNumber() != null ? e.getSerialNumber() : "-") : "-";
+                
+                // First 5 columns show one equipment details
+                table.addCell(new Cell().add(new Paragraph(model + "\nSN: " + sn).setFontSize(8)).setBackgroundColor(LIGHT_GRAY).setPadding(3));
+                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setBorder(Border.NO_BORDER));
+                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setBorder(Border.NO_BORDER));
+                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setBorder(Border.NO_BORDER));
+                table.addCell(new Cell().setBackgroundColor(LIGHT_GRAY).setBorder(Border.NO_BORDER));
+                table.addCell(new Cell().add(new Paragraph(a.getUser() != null ? a.getUser().getUsername() : "-").setFontSize(9)).setBackgroundColor(LIGHT_GRAY).setPadding(3));
             }
         }
         return table;
     }
 
-    private Table buildSignatureSection(User user) {
-        Cell leftLabel = new Cell().add(new Paragraph("Entité demandeuse").setFontSize(9).setFontColor(MARSA_BLUE)).setBorder(Border.NO_BORDER).setPaddingBottom(3);
-        Cell rightLabel = new Cell().add(new Paragraph("Le Chef de la DSI BUM").setFontSize(9).setFontColor(MARSA_BLUE)).setBorder(Border.NO_BORDER).setPaddingBottom(3);
+    private Table buildPdfSignatureSection(User user) {
+        Cell leftLabel = new Cell().add(new Paragraph("Entité demandeuse").setFontSize(10).setFontColor(MARSA_BLUE))
+                .setBorder(Border.NO_BORDER).setPaddingBottom(5);
+        Cell rightLabel = new Cell().add(new Paragraph("Le Chef de la DSI BUM").setFontSize(10).setFontColor(MARSA_BLUE))
+                .setBorder(Border.NO_BORDER).setPaddingBottom(5);
 
         Cell leftBox = new Cell()
-                .add(new Paragraph("Nom: " + (user.getFullName() != null ? user.getFullName() : user.getUsername())).setFontSize(9))
-                .add(new Paragraph("Signature:").setFontSize(9).setMarginTop(20))
-                .add(new Paragraph("Cachet:").setFontSize(9).setMarginTop(20))
-                .setBorder(new SolidBorder(GRAY_TEXT, 0.5f)).setPadding(8);
+                .add(new Paragraph("Nom: " + (user.getUsername() != null ? user.getUsername() : "-")).setFontSize(10))
+                .add(new Paragraph("Signature:").setFontSize(10).setMarginTop(25))
+                .add(new Paragraph("Cachet:").setFontSize(10).setMarginTop(25))
+                .setBorder(new SolidBorder(GRAY_TEXT, 0.5f)).setPadding(10);
 
         Cell rightBox = new Cell()
-                .add(new Paragraph("Nom:").setFontSize(9))
-                .add(new Paragraph("Signature:").setFontSize(9).setMarginTop(20))
-                .add(new Paragraph("Cachet:").setFontSize(9).setMarginTop(20))
-                .setBorder(new SolidBorder(GRAY_TEXT, 0.5f)).setPadding(8);
+                .add(new Paragraph("Nom:").setFontSize(10))
+                .add(new Paragraph("Signature:").setFontSize(10).setMarginTop(25))
+                .add(new Paragraph("Cachet:").setFontSize(10).setMarginTop(25))
+                .setBorder(new SolidBorder(GRAY_TEXT, 0.5f)).setPadding(10);
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{50, 50})).useAllAvailableWidth();
         table.addCell(leftLabel);
@@ -178,12 +192,14 @@ public class PdfService {
         return table;
     }
 
-    private Paragraph buildFooter() {
-        return new Paragraph("MARSA MAROC - Document généré le " + LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")))
-                .setFontSize(8).setFontColor(GRAY_TEXT).setTextAlignment(TextAlignment.CENTER).setMarginTop(3);
+    private Paragraph buildPdfFooter() {
+        return new Paragraph("MARSA MAROC")
+                .setFontSize(9).setFontColor(GRAY_TEXT)
+                .setTextAlignment(TextAlignment.CENTER)
+                .setMarginTop(5);
     }
 
-    private LineSeparator buildHRule(DeviceRgb color, float thickness, float marginBottom) {
+    private LineSeparator buildPdfHRule(DeviceRgb color, float thickness, float marginBottom) {
         LineSeparator line = new LineSeparator(new com.itextpdf.kernel.pdf.canvas.draw.SolidLine(thickness));
         line.setStrokeColor(color);
         line.setMarginBottom(marginBottom);
@@ -195,14 +211,13 @@ public class PdfService {
         if (user == null) return null;
         
         List<AssignmentHistory> activeAssignments = assignmentRepo.findByUserIdAndEndDateIsNull(userId);
-        
         String outputDir = "./uploads/assignments/";
-        new File(outputDir).mkdirs();
+        new java.io.File(outputDir).mkdirs();
         
         String fileName = outputDir + "fiche_affectation_" + userId + "_" + System.currentTimeMillis() + ".pdf";
         byte[] pdfBytes = generateFicheAffectationPdf(userId);
         
-        FileOutputStream fos = new FileOutputStream(fileName);
+        java.io.FileOutputStream fos = new java.io.FileOutputStream(fileName);
         fos.write(pdfBytes);
         fos.close();
         
@@ -214,31 +229,22 @@ public class PdfService {
         if (ticket == null) return null;
         
         String outputDir = "./uploads/assignments/";
-        new File(outputDir).mkdirs();
+        new java.io.File(outputDir).mkdirs();
         
         String fileName = outputDir + "intervention_" + ticketId + "_" + System.currentTimeMillis() + ".pdf";
         PdfWriter writer = new PdfWriter(fileName);
         PdfDocument pdf = new PdfDocument(writer);
         Document document = new Document(pdf);
         
-        Paragraph title = new Paragraph("TICKET D'INTERVENTION")
-            .setTextAlignment(TextAlignment.CENTER)
-            .setFontSize(18)
-            .setBold();
-        document.add(title);
-        
+        document.add(new Paragraph("TICKET D'INTERVENTION")
+            .setTextAlignment(TextAlignment.CENTER).setFontSize(18).setBold());
         document.add(new Paragraph("\n"));
         document.add(new Paragraph("Titre: " + ticket.getTitle()).setFontSize(12));
         document.add(new Paragraph("Priorité: " + ticket.getPriority()).setFontSize(10));
         document.add(new Paragraph("Statut: " + ticket.getStatus()).setFontSize(10));
-        document.add(new Paragraph("Type: " + ticket.getInterventionType()).setFontSize(10));
         
         if (ticket.getDescription() != null) {
             document.add(new Paragraph("\nDescription: " + ticket.getDescription()).setFontSize(10));
-        }
-        
-        if (ticket.getResolutionNotes() != null) {
-            document.add(new Paragraph("\nRésolution: " + ticket.getResolutionNotes()).setFontSize(10));
         }
         
         document.close();
