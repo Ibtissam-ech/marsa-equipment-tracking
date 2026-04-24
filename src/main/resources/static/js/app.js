@@ -92,7 +92,7 @@ function loadDashboard() {
         if (assignments.length === 0) {
             tbody.innerHTML = '<tr><td colspan="3"><div class="empty-state"><p>Aucune affectation</p></div></td></tr>';
         } else {
-            tbody.innerHTML = assignments.slice(0, 5).map(a => '<tr><td>' + (a.user?.fullName || '-') + '</td><td>' + (a.equipment?.model || '-') + '</td><td>' + formatDateSafe(a.startDate) + '</td></tr>').join('');
+            tbody.innerHTML = assignments.slice(0, 5).map(a => '<tr><td>' + (a.user?.username || '-') + '</td><td>' + (a.equipment?.model || '-') + '</td><td>' + formatDateSafe(a.startDate) + '</td></tr>').join('');
         }
     });
 }
@@ -110,7 +110,7 @@ function renderProductsTable(products) {
         tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><p>Aucun équipement</p></div></td></tr>';
         return;
     }
-    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? p.currentUser.fullName : '-') + '</td><td><span class="status-badge status-' + p.status + '">' + p.status + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductHistory(' + p.id + ')">Historique</button></td></tr>').join('');
+    tbody.innerHTML = products.map(p => '<tr><td>#' + p.id + '</td><td>' + (p.name || '-') + '</td><td>' + (p.model || '-') + '</td><td><code>' + (p.serialNumber || '-') + '</code></td><td>' + (p.currentUser ? (p.currentUser.fullName || p.currentUser.username) : '<span style="color:#999">Non affecté</span>') + '</td><td><span class="status-badge status-' + p.status + '">' + p.status + '</span></td><td><button class="btn btn-secondary btn-sm" onclick="viewProductDetails(' + p.id + ')">Détails</button></td></tr>').join('');
 }
 
 function filterProducts() {
