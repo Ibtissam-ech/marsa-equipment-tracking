@@ -18,10 +18,10 @@ public class PdfController {
         this.pdfService = pdfService;
     }
     
-    @GetMapping("/fiche-affectation/user/{userId}")
-    public ResponseEntity<Resource> generateUserFiche(@PathVariable Long userId) {
+    @GetMapping("/fiche-affectation/user/{affectataireId}")
+    public ResponseEntity<Resource> generateUserFiche(@PathVariable Long affectataireId) {
         try {
-            String fileName = pdfService.generateUserFichePdf(userId);
+            String fileName = pdfService.generateAffectataireFichePdf(affectataireId);
             if (fileName == null) {
                 return ResponseEntity.notFound().build();
             }
@@ -54,13 +54,14 @@ public class PdfController {
         }
     }
     
-    @GetMapping("/intervention/{ticketId}")
-    public ResponseEntity<Resource> generateInterventionPdf(@PathVariable Long ticketId) {
+    @GetMapping("/fiche-affectation/group")
+    public ResponseEntity<Resource> generateGroupFiche(@RequestParam String affectataires) {
         try {
-            String fileName = pdfService.generateInterventionPdf(ticketId);
-            if (fileName == null) {
-                return ResponseEntity.notFound().build();
-            }
+            String[] ids = affectataires.split(",");
+            Long[] affIds = new Long[ids.length];
+            for (int i = 0; i < ids.length; i++) affIds[i] = Long.parseLong(ids[i].trim());
+            String fileName = pdfService.generateGroupFichePdf(affIds);
+            if (fileName == null) return ResponseEntity.notFound().build();
             File file = new File(fileName);
             Resource resource = new FileSystemResource(file);
             return ResponseEntity.ok()

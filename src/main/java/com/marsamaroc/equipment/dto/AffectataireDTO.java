@@ -31,11 +31,6 @@ public class AffectataireDTO {
     public void setFonction(String fonction) { this.fonction = fonction; }
     
     public String getFullName() {
-        if (prenom != null && !prenom.isEmpty() && nom != null && !nom.isEmpty()) {
-            return prenom + " " + nom;
-        } else if (nom != null && !nom.isEmpty()) {
-            return nom;
-        }
-        return username;
+        return (nom != null && !nom.isEmpty()) ? nom : username;
     }
 }

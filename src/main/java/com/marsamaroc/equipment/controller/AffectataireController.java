@@ -3,6 +3,7 @@ package com.marsamaroc.equipment.controller;
 import com.marsamaroc.equipment.dto.AffectataireDTO;
 import com.marsamaroc.equipment.model.entity.Affectataire;
 import com.marsamaroc.equipment.repository.AffectataireRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,7 +37,6 @@ public class AffectataireController {
         Affectataire existing = affectataireRepo.findById(id).orElse(null);
         if (existing == null) return null;
         if (data.getNom() != null) existing.setNom(data.getNom());
-        if (data.getPrenom() != null) existing.setPrenom(data.getPrenom());
         if (data.getEmail() != null) existing.setEmail(data.getEmail());
         if (data.getTelephone() != null) existing.setTelephone(data.getTelephone());
         if (data.getCin() != null) existing.setCin(data.getCin());
@@ -44,13 +44,21 @@ public class AffectataireController {
         if (data.getFonction() != null) existing.setFonction(data.getFonction());
         return toDTO(affectataireRepo.save(existing));
     }
-    
+
+    @DeleteMapping("/affectataires/{id}")
+    public ResponseEntity<Void> deleteAffectataire(@PathVariable Long id) {
+        if (affectataireRepo.existsById(id)) {
+            affectataireRepo.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     private AffectataireDTO toDTO(Affectataire a) {
         AffectataireDTO dto = new AffectataireDTO();
         dto.setId(a.getId());
         dto.setUsername(a.getUsername());
         dto.setNom(a.getNom());
-        dto.setPrenom(a.getPrenom());
         dto.setEmail(a.getEmail());
         dto.setTelephone(a.getTelephone());
         dto.setCin(a.getCin());

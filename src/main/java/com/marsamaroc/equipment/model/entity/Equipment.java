@@ -21,9 +21,13 @@ public class Equipment {
     private String location;
     private Long createdBy;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "current_user_id")
     private User currentUser;
+    
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "current_affectataire_id")
+    private Affectataire currentAffectataire;
     
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -56,6 +60,8 @@ public class Equipment {
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     public User getCurrentUser() { return currentUser; }
     public void setCurrentUser(User currentUser) { this.currentUser = currentUser; }
+    public Affectataire getCurrentAffectataire() { return currentAffectataire; }
+    public void setCurrentAffectataire(Affectataire currentAffectataire) { this.currentAffectataire = currentAffectataire; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

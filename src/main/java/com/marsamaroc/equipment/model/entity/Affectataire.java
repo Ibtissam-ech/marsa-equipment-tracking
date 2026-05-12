@@ -13,8 +13,9 @@ public class Affectataire {
     @Column(unique = true, nullable = false)
     private String username;
     
+    // Stores the full name (e.g. "MOUHADDAB Abderrahmane")
     private String nom;
-    private String prenom;
+    
     private String email;
     private String telephone;
     private String cin;
@@ -35,8 +36,6 @@ public class Affectataire {
     public void setUsername(String username) { this.username = username; }
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
-    public String getPrenom() { return prenom; }
-    public void setPrenom(String prenom) { this.prenom = prenom; }
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
     public String getTelephone() { return telephone; }
@@ -51,11 +50,6 @@ public class Affectataire {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
     public String getFullName() {
-        if (prenom != null && !prenom.isEmpty() && nom != null && !nom.isEmpty()) {
-            return prenom + " " + nom;
-        } else if (nom != null && !nom.isEmpty()) {
-            return nom;
-        }
-        return username;
+        return (nom != null && !nom.isEmpty()) ? nom : username;
     }
 }

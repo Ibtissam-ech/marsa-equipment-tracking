@@ -1,11 +1,14 @@
 package com.marsamaroc.equipment.controller;
 
+import com.marsamaroc.equipment.dto.AssignmentDTO;
 import com.marsamaroc.equipment.dto.EquipmentDTO;
 import com.marsamaroc.equipment.model.entity.*;
 import com.marsamaroc.equipment.repository.*;
 import com.marsamaroc.equipment.service.EquipmentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -16,18 +19,16 @@ public class EquipmentController {
     private final UserRepository userRepo;
     private final EquipmentRepository equipmentRepo;
     private final AssignmentHistoryRepository assignmentRepo;
-    private final TicketRepository ticketRepo;
     private final CategoryRepository categoryRepo;
     private final AffectataireRepository affectataireRepo;
     
     public EquipmentController(EquipmentService s, UserRepository u, EquipmentRepository e, 
-                          AssignmentHistoryRepository a, TicketRepository t, CategoryRepository c,
+                          AssignmentHistoryRepository a, CategoryRepository c,
                           AffectataireRepository af) {
         this.equipmentService = s;
         this.userRepo = u;
         this.equipmentRepo = e;
         this.assignmentRepo = a;
-        this.ticketRepo = t;
         this.categoryRepo = c;
         this.affectataireRepo = af;
     }
@@ -62,29 +63,19 @@ public class EquipmentController {
         return equipmentService.saveUser(user);
     }
     
-    @GetMapping("/users/{id}/assignments")
-    public List<AssignmentHistory> getUserAssignments(@PathVariable Long id) {
-        return assignmentRepo.findByUserId(id);
-    }
-    
-    @GetMapping("/affectataires")
-    public List<Affectataire> getAllAffectataires() {
-        return affectataireRepo.findAll();
-    }
-    
-    @GetMapping("/affectataires/{id}")
-    public Affectataire getAffectataire(@PathVariable Long id) {
-        return affectataireRepo.findById(id).orElse(null);
+    @GetMapping("/affectataires/{id}/assignments")
+    public List<AssignmentHistory> getAffectataireAssignments(@PathVariable Long id) {
+        return assignmentRepo.findByAffectataireId(id);
     }
     
     @GetMapping("/assignments/current")
-    public List<AssignmentHistory> getCurrentAssignments() {
-        return equipmentService.getCurrentAssignments();
+    public List<AssignmentDTO> getCurrentAssignments() {
+        return equipmentService.getAllAssignmentsAsDTO();
     }
     
     @GetMapping("/assignments/history")
-    public List<AssignmentHistory> getAssignmentHistory() {
-        return assignmentRepo.findAll();
+    public List<AssignmentDTO> getAssignmentHistory() {
+        return equipmentService.getAllAssignmentsAsDTO();
     }
     
     @GetMapping("/assignments/equipment/{equipmentId}")
@@ -95,10 +86,16 @@ public class EquipmentController {
     @PostMapping("/assignments/assign")
     public AssignmentHistory assignEquipment(@RequestBody Map<String, Object> data) {
         Long productId = ((Number) data.get("productId")).longValue();
-        Long userId = ((Number) data.get("userId")).longValue();
+        Long affectataireId = ((Number) data.get("userId")).longValue();
         Long assignedBy = data.get("assignedBy") != null ? ((Number) data.get("assignedBy")).longValue() : null;
         String notes = (String) data.get("notes");
-        return equipmentService.assignEquipment(productId, userId, assignedBy, notes);
+        String directionOrigine = (String) data.get("directionOrigine");
+        String directionDestination = (String) data.get("directionDestination");
+        LocalDateTime startDate = null;
+        if (data.get("startDate") != null) {
+            startDate = LocalDateTime.parse((String) data.get("startDate"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        }
+        return equipmentService.assignEquipment(productId, affectataireId, assignedBy, notes, directionOrigine, directionDestination, startDate);
     }
     
     @PostMapping("/assignments/end/{productId}")
@@ -106,28 +103,20 @@ public class EquipmentController {
         return equipmentService.endAssignment(productId, data.get("notes"));
     }
     
-    @GetMapping("/tickets/open")
-    public List<InterventionTicket> getOpenTickets() {
-        return equipmentService.getOpenTickets();
-    }
-    
-    @PostMapping("/tickets")
-    public InterventionTicket createTicket(@RequestBody InterventionTicket ticket) {
-        return equipmentService.createTicket(ticket);
-    }
-    
-    @PutMapping("/tickets/{id}/close")
-    public InterventionTicket closeTicket(@PathVariable Long id, @RequestBody Map<String, Object> data) {
-        Long closedBy = data.get("closedBy") != null ? ((Number) data.get("closedBy")).longValue() : null;
-        String resolutionNotes = (String) data.get("resolutionNotes");
-        return equipmentService.closeTicket(id, closedBy, resolutionNotes);
-    }
-    
     @GetMapping("/categories")
     public List<EquipmentCategory> getAllCategories() {
         return equipmentService.getAllCategories();
     }
     
+    @DeleteMapping("/equipment/{id}")
+    public ResponseEntity<Void> deleteEquipment(@PathVariable Long id) {
+        if (equipmentRepo.existsById(id)) {
+            equipmentRepo.deleteById(id);
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
+
     @PutMapping("/equipment/{id}")
     public EquipmentDTO updateEquipment(@PathVariable Long id, @RequestBody Equipment equipment) {
         Equipment existing = equipmentRepo.findById(id).orElse(null);

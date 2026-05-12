@@ -77,30 +77,30 @@
         <div class="login-footer">
             <p>Marsa Maroc - Equipment Tracking System</p>
         </div>
-        <div class="demo-accounts">
-            <h3>Comptes de démonstration (cliquez pour tester)</h3>
-            <div class="demo-account" onclick="quickLogin('amine', 'password')">
-                <div class="demo-account-info">
-                    <strong>admin / password</strong>
-                    <span>Administrateur</span>
+            <div class="demo-accounts">
+                <h3>Comptes de démonstration</h3>
+                <div class="demo-account" onclick="quickLogin('amine', 'password')">
+                    <div class="demo-account-info">
+                        <strong>amine / password</strong>
+                        <span>Administrateur</span>
+                    </div>
+                    <span class="role-badge role-admin">Admin</span>
                 </div>
-                <span class="role-badge role-admin">Admin</span>
-            </div>
-            <div class="demo-account" onclick="quickLogin('said', 'password')">
-                <div class="demo-account-info">
-                    <strong>said / password</strong>
-                    <span>Technicien</span>
+                <div class="demo-account" onclick="quickLogin('technicien1', 'password')">
+                    <div class="demo-account-info">
+                        <strong>technicien1 / password</strong>
+                        <span>Technicien IT</span>
+                    </div>
+                    <span class="role-badge role-tech">Technicien</span>
                 </div>
-                <span class="role-badge role-tech">Tech</span>
-            </div>
-            <div class="demo-account" onclick="quickLogin('soufiane', 'password')">
-                <div class="demo-account-info">
-                    <strong>soufiane / password</strong>
-                    <span>Technicien</span>
+                <div class="demo-account" onclick="quickLogin('personnel1', 'password')">
+                    <div class="demo-account-info">
+                        <strong>personnel1 / password</strong>
+                        <span>Personnel</span>
+                    </div>
+                    <span class="role-badge" style="background:#6B7280;color:white">Personnel</span>
                 </div>
-                <span class="role-badge role-tech">Tech</span>
             </div>
-        </div>
     </div>
     <script>
         const API_BASE = '/api';

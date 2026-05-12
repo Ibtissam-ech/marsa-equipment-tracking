@@ -1,11 +1,14 @@
 package com.marsamaroc.equipment.service;
 
+import com.marsamaroc.equipment.dto.AssignmentDTO;
 import com.marsamaroc.equipment.dto.EquipmentDTO;
 import com.marsamaroc.equipment.model.entity.*;
 import com.marsamaroc.equipment.repository.*;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -13,19 +16,55 @@ public class EquipmentService {
     private final EquipmentRepository equipmentRepo;
     private final UserRepository userRepo;
     private final AssignmentHistoryRepository assignmentRepo;
-    private final TicketRepository ticketRepo;
     private final CategoryRepository categoryRepo;
+    private final AffectataireRepository affectataireRepo;
     
-    public EquipmentService(EquipmentRepository e, UserRepository u, AssignmentHistoryRepository a, TicketRepository t, CategoryRepository c) {
+    public EquipmentService(EquipmentRepository e, UserRepository u, AssignmentHistoryRepository a, CategoryRepository c, AffectataireRepository af) {
         this.equipmentRepo = e;
         this.userRepo = u;
         this.assignmentRepo = a;
-        this.ticketRepo = t;
         this.categoryRepo = c;
+        this.affectataireRepo = af;
     }
     
     public List<EquipmentDTO> getAllEquipment() {
-        return equipmentRepo.findAll().stream().map(this::toDTO).collect(Collectors.toList());
+        List<Equipment> all = equipmentRepo.findAll();
+        for (Equipment e : all) {
+            if (e.getCurrentAffectataire() != null && e.getCurrentAffectataire().getId() != null) {
+                Affectataire aff = affectataireRepo.findById(e.getCurrentAffectataire().getId()).orElse(null);
+                e.setCurrentAffectataire(aff);
+            }
+        }
+        return all.stream().map(this::toDTO).collect(Collectors.toList());
+    }
+    
+    public List<AssignmentDTO> getAllAssignmentsAsDTO() {
+        List<AssignmentHistory> all = assignmentRepo.findAll();
+        return all.stream().map(a -> {
+            AssignmentDTO dto = new AssignmentDTO();
+            dto.setId(a.getId());
+            if (a.getStartDate() != null) {
+                dto.setStartDate(a.getStartDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            }
+            if (a.getEndDate() != null) {
+                dto.setEndDate(a.getEndDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+            }
+            
+            if (a.getEquipment() != null) {
+                Equipment eq = equipmentRepo.findById(a.getEquipment().getId()).orElse(null);
+                if (eq != null) {
+                    dto.setEquipment(new AssignmentDTO.EquipmentSummary(eq.getId(), eq.getModel(), eq.getSerialNumber(), eq.getStatus()));
+                }
+            }
+            
+            if (a.getAffectataire() != null) {
+                Affectataire aff = affectataireRepo.findById(a.getAffectataire().getId()).orElse(null);
+                if (aff != null) {
+                    dto.setAffectataire(new AssignmentDTO.AffectataireSummary(aff.getId(), aff.getNom(), null, aff.getDepartment(), aff.getEmail()));
+                }
+            }
+            return dto;
+        }).collect(Collectors.toList());
     }
     
     public EquipmentDTO getEquipment(Long id) {
@@ -54,20 +93,23 @@ public class EquipmentService {
             .collect(Collectors.toList());
     }
     
-    public AssignmentHistory assignEquipment(Long equipmentId, Long userId, Long assignedBy, String notes) {
+    public AssignmentHistory assignEquipment(Long equipmentId, Long affectataireId, Long assignedBy, String notes, String directionOrigine, String directionDestination, LocalDateTime startDate) {
         Equipment eq = equipmentRepo.findById(equipmentId).orElse(null);
-        User user = userRepo.findById(userId).orElse(null);
-        if (eq == null || user == null) return null;
+        Affectataire affectataire = affectataireRepo.findById(affectataireId).orElse(null);
+        if (eq == null || affectataire == null) return null;
         
         AssignmentHistory assignment = new AssignmentHistory();
         assignment.setEquipment(eq);
-        assignment.setUser(user);
-        assignment.setStartDate(LocalDateTime.now());
+        assignment.setAffectataire(affectataire);
+        assignment.setStartDate(startDate != null ? startDate : LocalDateTime.now());
+        assignment.setAssignedDate(LocalDateTime.now());
         assignment.setAssignedBy(assignedBy != null ? "USER-" + assignedBy : "SYSTEM");
         assignment.setNotes(notes);
+        assignment.setDirectionOrigine(directionOrigine);
+        assignment.setDirectionDestination(directionDestination);
         assignmentRepo.save(assignment);
         
-        eq.setCurrentUser(user);
+        eq.setCurrentAffectataire(affectataire);
         eq.setStatus("ASSIGNED");
         equipmentRepo.save(eq);
         
@@ -84,31 +126,11 @@ public class EquipmentService {
             assignmentRepo.save(a);
         }
         
-        eq.setCurrentUser(null);
+        eq.setCurrentAffectataire(null);
         eq.setStatus("AVAILABLE");
         equipmentRepo.save(eq);
         
         return active.isEmpty() ? null : active.get(0);
-    }
-    
-    public List<InterventionTicket> getOpenTickets() {
-        return ticketRepo.findByStatus("OPEN");
-    }
-    
-    public InterventionTicket createTicket(InterventionTicket t) {
-        return ticketRepo.save(t);
-    }
-    
-    public InterventionTicket closeTicket(Long ticketId, Long closedBy, String resolutionNotes) {
-        InterventionTicket t = ticketRepo.findById(ticketId).orElse(null);
-        if (t != null) {
-            t.setStatus("CLOSED");
-            t.setClosedAt(LocalDateTime.now());
-            t.setClosedBy(closedBy);
-            t.setResolutionNotes(resolutionNotes);
-            return ticketRepo.save(t);
-        }
-        return null;
     }
     
     public List<EquipmentCategory> getAllCategories() {
@@ -127,11 +149,11 @@ public class EquipmentService {
         dto.setStatus(e.getStatus());
         dto.setLocation(e.getLocation());
         dto.setCreatedBy(e.getCreatedBy());
-        if (e.getCurrentUser() != null) {
-            dto.setCurrentUser(new EquipmentDTO.UserDTO(
-                e.getCurrentUser().getId(),
-                e.getCurrentUser().getFullName(),
-                e.getCurrentUser().getUsername()
+        if (e.getCurrentAffectataire() != null) {
+            dto.setCurrentAffectataire(new EquipmentDTO.AffectataireDTO(
+                e.getCurrentAffectataire().getId(),
+                e.getCurrentAffectataire().getFullName(),
+                e.getCurrentAffectataire().getNom()
             ));
         }
         return dto;

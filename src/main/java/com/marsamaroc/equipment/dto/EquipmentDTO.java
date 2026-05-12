@@ -14,6 +14,7 @@ public class EquipmentDTO {
     private String location;
     private Long createdBy;
     private UserDTO currentUser;
+    private AffectataireDTO currentAffectataire;
     
     public static class UserDTO {
         private Long id;
@@ -34,6 +35,27 @@ public class EquipmentDTO {
         public void setFullName(String fullName) { this.fullName = fullName; }
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
+    }
+    
+    public static class AffectataireDTO {
+        private Long id;
+        private String fullName;
+        private String nom;
+        
+        public AffectataireDTO() {}
+        
+        public AffectataireDTO(Long id, String fullName, String nom) {
+            this.id = id;
+            this.fullName = fullName;
+            this.nom = nom;
+        }
+        
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
+        public String getFullName() { return fullName; }
+        public void setFullName(String fullName) { this.fullName = fullName; }
+        public String getNom() { return nom; }
+        public void setNom(String nom) { this.nom = nom; }
     }
     
     public Long getId() { return id; }
@@ -58,6 +80,8 @@ public class EquipmentDTO {
     public void setCreatedBy(Long createdBy) { this.createdBy = createdBy; }
     public UserDTO getCurrentUser() { return currentUser; }
     public void setCurrentUser(UserDTO currentUser) { this.currentUser = currentUser; }
+    public AffectataireDTO getCurrentAffectataire() { return currentAffectataire; }
+    public void setCurrentAffectataire(AffectataireDTO currentAffectataire) { this.currentAffectataire = currentAffectataire; }
     
     public static EquipmentDTO fromEntity(Equipment e) {
         EquipmentDTO dto = new EquipmentDTO();

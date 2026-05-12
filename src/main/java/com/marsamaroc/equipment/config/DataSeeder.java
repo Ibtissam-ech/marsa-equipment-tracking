@@ -5,56 +5,23 @@ import com.marsamaroc.equipment.repository.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import javax.sql.DataSource;
+import java.util.List;
 
 @Configuration
 public class DataSeeder {
     @Bean
     CommandLineRunner init(UserRepository userRepo, EquipmentRepository equipmentRepo, 
-                          CategoryRepository categoryRepo, AssignmentHistoryRepository assignmentRepo) {
+                          CategoryRepository categoryRepo, AssignmentHistoryRepository assignmentRepo,
+                          AffectataireRepository affectataireRepo, DataSource dataSource) {
         return args -> {
-            if (userRepo.count() == 0) {
-                // Create 5 users
-                User said = new User();
-                said.setUsername("said");
-                said.setPassword("password");
-                said.setFullName("Said");
-                said.setEmail("said@marsa.ma");
-                said.setRole("TECHNICIEN");
-                said.setDepartment("Maintenance");
-                said.setFonction("Technicien");
-                said.setPhoneNumber("+212661234567");
-                userRepo.save(said);
-                
-                User soufiane = new User();
-                soufiane.setUsername("soufiane");
-                soufiane.setPassword("password");
-                soufiane.setFullName("Soufiane");
-                soufiane.setEmail("soufiane@marsa.ma");
-                soufiane.setRole("TECHNICIEN");
-                soufiane.setDepartment("IT");
-                soufiane.setFonction("Technicien IT");
-                userRepo.save(soufiane);
-                
-                User younes = new User();
-                younes.setUsername("younes");
-                younes.setPassword("password");
-                younes.setFullName("Younes");
-                younes.setEmail("younes@marsa.ma");
-                younes.setRole("TECHNICIEN");
-                younes.setDepartment("Maintenance");
-                younes.setFonction("Technicien");
-                userRepo.save(younes);
-                
-                User rida = new User();
-                rida.setUsername("rida");
-                rida.setPassword("password");
-                rida.setFullName("Rida");
-                rida.setEmail("rida@marsa.ma");
-                rida.setRole("TECHNICIEN");
-                rida.setDepartment("IT");
-                rida.setFonction("Technicien");
-                userRepo.save(rida);
-                
+            JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+            try {
+                jdbc.execute("ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check");
+            } catch (Exception ignored) {}
+            // Always ensure admin user exists with ADMIN role
+            if (!userRepo.existsByUsername("amine")) {
                 User amine = new User();
                 amine.setUsername("amine");
                 amine.setPassword("password");
@@ -64,8 +31,92 @@ public class DataSeeder {
                 amine.setDepartment("Direction");
                 amine.setFonction("Administrateur");
                 userRepo.save(amine);
+            } else {
+                User existing = userRepo.findByUsername("amine").get();
+                if (!"ADMIN".equals(existing.getRole())) {
+                    existing.setRole("ADMIN");
+                    userRepo.save(existing);
+                }
+            }
+
+            // Ensure technician users exist
+            String[][] techs = {
+                {"technicien1", "Technicien IT 1", "tech1@marsa.ma"},
+                {"technicien2", "Technicien IT 2", "tech2@marsa.ma"},
+                {"technicien3", "Technicien IT 3", "tech3@marsa.ma"},
+            };
+            for (String[] t : techs) {
+                if (!userRepo.existsByUsername(t[0])) {
+                    User tech = new User();
+                    tech.setUsername(t[0]);
+                    tech.setPassword("password");
+                    tech.setFullName(t[1]);
+                    tech.setEmail(t[2]);
+                    tech.setRole("TECHNICIEN");
+                    tech.setDepartment("IT");
+                    tech.setFonction("Technicien");
+                    userRepo.save(tech);
+                }
+            }
+
+            // Ensure personnel user exists
+            if (!userRepo.existsByUsername("personnel1")) {
+                User personnel = new User();
+                personnel.setUsername("personnel1");
+                personnel.setPassword("password");
+                personnel.setFullName("Personnel Test");
+                personnel.setEmail("personnel1@marsa.ma");
+                personnel.setRole("PERSONNEL");
+                personnel.setDepartment("Service");
+                personnel.setFonction("Employé");
+                userRepo.save(personnel);
+            }
+            
+            // Create affectataires if none exist
+            if (affectataireRepo.count() == 0) {
+                Affectataire said = new Affectataire();
+                said.setUsername("said");
+                said.setNom("Oubdi Said");
+                said.setEmail("said@marsa.ma");
+                said.setDepartment("Maintenance");
+                said.setFonction("Technicien");
+                affectataireRepo.save(said);
                 
-                // Create 20 equipment items
+                Affectataire soufiane = new Affectataire();
+                soufiane.setUsername("soufiane");
+                soufiane.setNom("Amenzo Soufiane");
+                soufiane.setEmail("soufiane@marsa.ma");
+                soufiane.setDepartment("IT");
+                soufiane.setFonction("Technicien IT");
+                affectataireRepo.save(soufiane);
+                
+                Affectataire younes = new Affectataire();
+                younes.setUsername("younes");
+                younes.setNom("Houali Younes");
+                younes.setEmail("younes@marsa.ma");
+                younes.setDepartment("Maintenance");
+                younes.setFonction("Technicien");
+                affectataireRepo.save(younes);
+                
+                Affectataire rida = new Affectataire();
+                rida.setUsername("rida");
+                rida.setNom("Rami Rida");
+                rida.setEmail("rida@marsa.ma");
+                rida.setDepartment("IT");
+                rida.setFonction("Technicien");
+                affectataireRepo.save(rida);
+                
+                Affectataire amineAffect = new Affectataire();
+                amineAffect.setUsername("amine");
+                amineAffect.setNom("Deraa Amine");
+                amineAffect.setEmail("amine@marsa.ma");
+                amineAffect.setDepartment("Direction");
+                amineAffect.setFonction("Directeur");
+                affectataireRepo.save(amineAffect);
+            }
+            
+            // Always create equipment items if none exist
+            if (equipmentRepo.count() == 0) {
                 String[][] equipmentData = {
                     {"Dell Latitude 5520", "DL5520-001", "Dell", "INFORMATIQUE"},
                     {"Dell Latitude 5520", "DL5520-002", "Dell", "INFORMATIQUE"},
@@ -100,11 +151,31 @@ public class DataSeeder {
                     equipmentRepo.save(eq);
                 }
                 
-                System.out.println("=========================================");
-                System.out.println("Database seeded with demo data!");
-                System.out.println("Users: 5 | Equipment: 20");
-                System.out.println("=========================================");
+                // Create sample assignments if none exist
+                List<Equipment> allEquip = equipmentRepo.findAll();
+                List<Affectataire> allAffect = affectataireRepo.findAll();
+                if (assignmentRepo.count() == 0 && allEquip.size() >= 5 && allAffect.size() >= 3) {
+                    // Assign first 3 affectataires to first 5 equipment items
+                    for (int i = 0; i < 5 && i < allEquip.size(); i++) {
+                        AssignmentHistory ah = new AssignmentHistory();
+                        ah.setEquipment(allEquip.get(i));
+                        ah.setAffectataire(allAffect.get(i % allAffect.size()));
+                        ah.setStartDate(java.time.LocalDateTime.now());
+                        ah.setAssignedBy("SYSTEM");
+                        ah.setNotes("Affectation initiale");
+                        assignmentRepo.save(ah);
+                        
+                        allEquip.get(i).setCurrentAffectataire(allAffect.get(i % allAffect.size()));
+                        allEquip.get(i).setStatus("ASSIGNED");
+                        equipmentRepo.save(allEquip.get(i));
+                    }
+                }
             }
+            
+            System.out.println("=========================================");
+            System.out.println("Application started!");
+            System.out.println("Users: " + userRepo.count() + " | Affectataires: " + affectataireRepo.count() + " | Equipment: " + equipmentRepo.count());
+            System.out.println("=========================================");
         };
     }
 }

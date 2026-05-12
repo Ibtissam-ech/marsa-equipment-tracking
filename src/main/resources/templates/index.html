@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marsa Maroc</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -15,28 +15,28 @@
             <span class="nav-brand"></span>
         </div>
         <ul class="nav-menu">
-            <li><a href="#" onclick="showTab('dashboard')" class="active" data-tab="dashboard">
+            <li><a href="javascript:void(0)" onclick="showTab('dashboard', this)" class="active" data-tab="dashboard">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                 <span>Tableau de bord</span>
             </a></li>
-            <li><a href="#" onclick="showTab('products')" data-tab="products">
+            <li><a href="javascript:void(0)" onclick="showTab('products', this)" data-tab="products">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                 <span>Équipements</span>
             </a></li>
-            <li><a href="#" onclick="showTab('users')" data-tab="users">
+            <li><a href="javascript:void(0)" onclick="showTab('users', this)" data-tab="users">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>Utilisateurs</span>
+                <span>Affectataires</span>
             </a></li>
-            <li><a href="#" onclick="showTab('assignments')" data-tab="assignments">
+            <li><a href="javascript:void(0)" onclick="showTab('assignments', this)" data-tab="assignments">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
                 <span>Affectations</span>
             </a></li>
-            <li><a href="#" onclick="showTab('interventions')" data-tab="interventions">
+            <li><a href="javascript:void(0)" onclick="showTab('interventions', this)" data-tab="interventions">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 <span>Tickets</span>
             </a></li>
         </ul>
-        <div class="nav-user" onclick="logout()">
+        <div class="nav-user" style="cursor:pointer" onclick="doLogout()">
             <div class="user-avatar" id="userAvatar">A</div>
             <div class="user-info">
                 <span class="user-name" id="userName">Admin</span>
@@ -93,7 +93,7 @@
                     <h3 class="card-title">Affectations récentes</h3>
                 </div>
                 <table class="data-table">
-                    <thead><tr><th>Utilisateur</th><th>Équipement</th><th>Date</th></tr></thead>
+                    <thead><tr><th>Affectataire</th><th>Équipement</th><th>Date</th></tr></thead>
                     <tbody id="recent-assignments"></tbody>
                 </table>
             </div>
@@ -136,7 +136,7 @@
             </div>
             <div class="card">
                 <table class="data-table">
-                    <thead><tr><th>Équipement</th><th>Utilisateur</th><th>Date d'affectation</th><th>Date de retour</th><th>Statut</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Affectataire</th><th>Équipement</th><th>Date d'affectation</th><th>Statut</th><th>Actions</th></tr></thead>
                     <tbody id="current-assignments-list"></tbody>
                 </table>
             </div>
@@ -145,12 +145,69 @@
         <div id="interventions-tab" class="tab-content">
             <div class="page-header">
                 <h1 class="page-title">Tickets d'intervention</h1>
-                <button class="btn btn-primary" onclick="showAddTicketModal()">+ Nouveau ticket</button>
+                <button class="btn btn-primary personnel-only" onclick="document.getElementById('ticket-title').focus(); document.getElementById('ticket-create-section').scrollIntoView({behavior:'smooth'})">+ Nouveau ticket</button>
             </div>
-            <div class="card">
+            <div id="ticket-create-section" class="personnel-only card" style="margin-bottom:20px;display:none">
+                <div class="card-header"><h3 class="card-title">Créer un ticket</h3></div>
+                <div class="card-body">
+                    <form id="ticket-form">
+                        <div class="form-group">
+                            <label>Titre *</label>
+                            <input type="text" id="ticket-title" required placeholder="ex: Problème d'imprimante">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Type d'équipement *</label>
+                                <select id="ticket-eq-type" required>
+                                    <option value="">Sélectionner</option>
+                                    <option value="IMPRIMANTE">Imprimante</option>
+                                    <option value="ORDINATEUR">Ordinateur</option>
+                                    <option value="ECRAN">Écran</option>
+                                    <option value="TELEPHONE">Téléphone</option>
+                                    <option value="RESEAU">Réseau</option>
+                                    <option value="AUTRE">Autre</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Nom de l'équipement</label>
+                                <input type="text" id="ticket-eq-name" placeholder="ex: HP LaserJet Pro">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Priorité *</label>
+                                <select id="ticket-priority" required>
+                                    <option value="LOW">Basse</option>
+                                    <option value="MEDIUM" selected>Moyenne</option>
+                                    <option value="HIGH">Haute</option>
+                                    <option value="URGENT">Urgente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Type d'intervention *</label>
+                                <select id="ticket-intervention-type" required>
+                                    <option value="">Sélectionner</option>
+                                    <option value="REPAIR">Réparation</option>
+                                    <option value="INSTALLATION">Installation</option>
+                                    <option value="SUPPLY">Fourniture</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Description *</label>
+                            <textarea id="ticket-description" rows="3" required placeholder="Décrivez le problème..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="create-ticket-btn">Créer le ticket</button>
+                    </form>
+                </div>
+            </div>
+            <div id="tickets-list-section" class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Liste des tickets</h3>
+                </div>
                 <table class="data-table">
-                    <thead><tr><th>ID</th><th>Titre</th><th>Équipement</th><th>Priorité</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
-                    <tbody id="open-tickets-list"></tbody>
+                    <thead><tr><th>ID</th><th>Titre</th><th>Équipement</th><th>Priorité</th><th>Statut</th><th>Demandeur</th><th>Date</th><th>Actions</th></tr></thead>
+                    <tbody id="tickets-list"></tbody>
                 </table>
             </div>
         </div>
@@ -164,6 +221,10 @@
             </div>
             <div class="modal-body">
                 <form id="add-product-form">
+                    <div class="form-group">
+                        <label>Nom complet de l'équipement *</label>
+                        <input type="text" id="product-name" required placeholder="ex: Lenovo ThinkCentre Neo 50T Gen 5">
+                    </div>
                     <div class="form-group">
                         <label>Modèle *</label>
                         <input type="text" id="product-model" required>
@@ -180,10 +241,13 @@
                         <label>Catégorie</label>
                         <select id="product-category">
                             <option value="">Sélectionner</option>
-                            <option value="INFORMATIQUE">Informatique</option>
-                            <option value="TELEPHONIE">Téléphonie</option>
-                            <option value="reseau">Réseau</option>
-                            <option value="autre">Autre</option>
+                            <option value="PC_FIXE">PC fixe</option>
+                            <option value="PORTABLE">Portable</option>
+                            <option value="MONITOR">Écran</option>
+                            <option value="KEYBOARD_MOUSE">Clavier et souris</option>
+                            <option value="DOCKING">Station d'accueil</option>
+                            <option value="ADAPTER">Adaptateur</option>
+                            <option value="HDD">Disque dur</option>
                         </select>
                     </div>
                 </form>
@@ -204,77 +268,52 @@
             <div class="modal-body">
                 <form id="assignment-form">
                     <div class="form-group">
+                        <label>Date d'affectation</label>
+                        <input type="date" id="assign-date">
+                    </div>
+                    <div class="form-group">
                         <label>Équipement *</label>
-                        <select id="assign-product-id" required>
+                        <select id="assign-product-id" required onchange="onEquipmentSelect()">
                             <option value="">Sélectionner</option>
                         </select>
                     </div>
+                    <div id="assign-equipment-details" style="display:none;background:var(--bg-secondary);padding:12px;border-radius:8px;margin-bottom:16px">
+                        <div style="font-size:13px;color:var(--text-secondary)">Détails de l'équipement</div>
+                        <div style="font-weight:600;margin-top:4px" id="assign-eq-name"></div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">
+                            Marque: <span id="assign-eq-brand"></span> | Modèle: <span id="assign-eq-model"></span> | N° Série: <span id="assign-eq-serial"></span>
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <label>Utilisateur *</label>
-                        <select id="assign-user-id" required>
+                        <label>Affectataire *</label>
+                        <select id="assign-user-id" required onchange="onAffectataireSelect()">
                             <option value="">Sélectionner</option>
                         </select>
+                    </div>
+                    <div id="assign-affectataire-details" style="display:none;background:var(--bg-secondary);padding:12px;border-radius:8px;margin-bottom:16px">
+                        <div style="font-size:13px;color:var(--text-secondary)">Détails de l'affectataire</div>
+                        <div style="font-weight:600;margin-top:4px" id="assign-aff-name"></div>
+                        <div style="font-size:12px;color:var(--text-secondary);margin-top:2px">
+            Dép: <span id="assign-aff-department"></span> | Fonction: <span id="assign-aff-fonction"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Direction d'origine</label>
+                        <input type="text" id="assign-dir-origine" placeholder="ex: SDBUM">
+                    </div>
+                    <div class="form-group">
+                        <label>Direction de destination</label>
+                        <input type="text" id="assign-dir-destination" placeholder="ex: DSI">
                     </div>
                     <div class="form-group">
                         <label>Notes</label>
-                        <textarea id="assign-notes" rows="3"></textarea>
+                        <textarea id="assign-notes" rows="2"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeModal('add-assignment-modal')">Annuler</button>
-                <button class="btn btn-primary" onclick="handleAssignment()">Affecter</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="add-ticket-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Nouveau ticket</h3>
-                <button class="modal-close" onclick="closeModal('add-ticket-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="intervention-form">
-                    <div class="form-group">
-                        <label>Titre *</label>
-                        <input type="text" id="ticket-title" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Équipement *</label>
-                        <select id="ticket-product-id" required>
-                            <option value="">Sélectionner</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Priorité</label>
-                            <select id="ticket-priority">
-                                <option value="LOW">Basse</option>
-                                <option value="MEDIUM" selected>Moyenne</option>
-                                <option value="HIGH">Haute</option>
-                                <option value="CRITICAL">Critique</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Type d'intervention</label>
-                            <select id="ticket-type">
-                                <option value="MAINTENANCE">Maintenance</option>
-                                <option value="REPAIR">Réparation</option>
-                                <option value="INSTALLATION">Installation</option>
-                                <option value="FORMATION">Formation</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="ticket-description" rows="3"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('add-ticket-modal')">Annuler</button>
-                <button class="btn btn-primary" onclick="handleIntervention()">Créer</button>
+                <button class="btn btn-primary" id="assign-submit-btn" onclick="handleAssignment()">Affecter</button>
             </div>
         </div>
     </div>
@@ -322,28 +361,8 @@
         </div>
     </div>
 
-    <div id="close-ticket-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">Fermer le ticket</h3>
-                <button class="modal-close" onclick="closeModal('close-ticket-modal')">&times;</button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="close-ticket-id">
-                <div class="form-group">
-                    <label>Notes de résolution</label>
-                    <textarea id="close-ticket-notes" rows="4"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('close-ticket-modal')">Annuler</button>
-                <button class="btn btn-primary" onclick="confirmCloseTicket()">Fermer</button>
-            </div>
-        </div>
-    </div>
-
     <div class="toast-container" id="toastContainer"></div>
 
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v=3"></script>
 </body>
 </html>

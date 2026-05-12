@@ -31,13 +31,14 @@ public class PageController {
         User user = userRepo.findByUsername(username).orElse(null);
         
         if (user != null && user.getPassword().equals(password) && 
-            ("ADMIN".equals(user.getRole()) || "TECHNICIEN".equals(user.getRole()))) {
+            ("ADMIN".equals(user.getRole()) || "TECHNICIEN".equals(user.getRole()) || "PERSONNEL".equals(user.getRole()))) {
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("user", Map.of(
                 "id", user.getId(),
                 "username", user.getUsername(),
                 "fullName", user.getFullName() != null ? user.getFullName() : user.getUsername(),
+                "email", user.getEmail() != null ? user.getEmail() : "",
                 "role", user.getRole()
             ));
             response.put("token", "demo-token-" + System.currentTimeMillis());
